@@ -1,0 +1,51 @@
+---
+title: "ARIMA"
+author: Aydan Yildiz 
+output: html_document
+date: "2025-04-06"
+---
+```{r}
+# Load necessary libraries
+library(forecast)
+library(TTR)
+library(ggplot2)
+library(readxl)
+
+
+ 
+# Load dataset
+average_monthly_surface_temperature <- read_excel("average-monthly-surface-temperature.xlsx")
+
+# Convert to time series
+ts_temp <- ts(average_monthly_surface_temperature$`Average surface temperature...5`, 
+              start = c(2000, 1), frequency = 12)
+
+# Fit ARIMA model
+model <- auto.arima(ts_temp)
+summary(model)  # Output explanation: shows ARIMA order, AIC/BIC, and residuals info
+
+# Residual Analysis
+checkresiduals(model)  # Check randomness, histogram, and Ljung-Box test
+
+# Forecast next 5 periods
+forecast_5 <- forecast(model, h = 5)
+autoplot(forecast_5) +
+  ggtitle("5-Month Forecast: Surface Temperature") +
+  ylab("Temperature") + xlab("Year")
+
+# Model accuracy with train/test split
+train <- window(ts_temp, end = c(2022, 12))
+test <- window(ts_temp, start = c(2023, 1))
+model_train <- auto.arima(train)
+fcast_test <- forecast(model_train, h = length(test))
+accuracy(fcast_test, test)  # Shows MAE, RMSE, MAPE
+
+
+```
+
+```{r}
+names(average_monthly_surface_temperature)
+
+```
+
+
